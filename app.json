@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "quizz-app",
-    "slug": "quizz-app",
+    "name": "flappy-bird-app",
+    "slug": "flappy-bird-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
