@@ -10,6 +10,7 @@ import {
   useFrameCallback,
   combineTransition
 } from 'react-native-reanimated'
+import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler'
 
 const GRAVITY = 500
 
@@ -44,14 +45,22 @@ const App = () => {
     birdYVelocity.value = birdYVelocity.value + (GRAVITY * dt) / 1000
   })
 
+  const gesture = Gesture.Tap().onStart(() => {
+    birdYVelocity.value = -300
+  })
+
   return (
-    <Canvas style={{ width, height }} onTouch={() => (birdYVelocity.value = -300)}>
-      <Image image={bg} width={width} height={height} fit={'cover'} />
-      <Image image={pipeTop} width={104} height={640} x={x} y={pipeOffset - 320} />
-      <Image image={pipeBottom} width={104} height={640} x={x} y={height - 320 + pipeOffset} />
-      <Image image={base} width={width} height={150} x={0} y={height - 75} fit={'cover'} />
-      <Image image={bird} width={64} height={48} x={width / 4} y={birdY} />
-    </Canvas>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureDetector gesture={gesture}>
+        <Canvas style={{ width, height }}>
+          <Image image={bg} width={width} height={height} fit={'cover'} />
+          <Image image={pipeTop} width={104} height={640} x={x} y={pipeOffset - 320} />
+          <Image image={pipeBottom} width={104} height={640} x={x} y={height - 320 + pipeOffset} />
+          <Image image={base} width={width} height={150} x={0} y={height - 75} fit={'cover'} />
+          <Image image={bird} width={64} height={48} x={width / 4} y={birdY} />
+        </Canvas>
+      </GestureDetector>
+    </GestureHandlerRootView>
   )
 }
 export default App
