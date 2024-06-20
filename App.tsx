@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
-import { useWindowDimensions } from 'react-native'
-import { Canvas, useImage, Image, Group, Fill } from '@shopify/react-native-skia'
+import { Platform, useWindowDimensions } from 'react-native'
+import { Canvas, useImage, Image, Group, Text, FontStyle, FontWeight, matchFont } from '@shopify/react-native-skia'
 import {
   useSharedValue,
   withTiming,
@@ -10,15 +10,19 @@ import {
   useFrameCallback,
   useDerivedValue,
   interpolate,
-  Extrapolation
+  Extrapolation,
+  useAnimatedReaction,
+  runOnJS
 } from 'react-native-reanimated'
 import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler'
+import { useState } from 'react'
 
 const GRAVITY = 1000
 const JUMP_FORCE = -500
 
 const App = () => {
   const { width, height } = useWindowDimensions()
+  const [score, setScore] = useState(0)
 
   const bg = useImage(require('./assets/sprites/background-day.png'))
   const bird = useImage(require('./assets/sprites/yellowbird-upflap.png'))
@@ -28,6 +32,14 @@ const App = () => {
 
   const x = useSharedValue(width)
   const pipeOffset = 0
+
+  const fontFamily = Platform.select({ ios: 'Helvetica', default: 'serif' })
+  const fontStyle = {
+    fontFamily,
+    fontSize: 40,
+    FontWeight: 'bold'
+  }
+  const font = matchFont(fontStyle)
 
   const birdY = useSharedValue(height / 3)
   const birdYVelocity = useSharedValue(0)
@@ -58,6 +70,17 @@ const App = () => {
     birdYVelocity.value = JUMP_FORCE
   })
 
+  useAnimatedReaction(
+    () => x.value,
+
+    (currentValue, previousValue) => {
+      const middle = width / 2
+      if (currentValue !== previousValue && previousValue && currentValue <= middle && previousValue > middle) {
+        runOnJS(setScore)(score + 1)
+      }
+    }
+  )
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <GestureDetector gesture={gesture}>
@@ -70,6 +93,8 @@ const App = () => {
           <Group transform={birdTransform} origin={birdOrigin}>
             <Image image={bird} width={64} height={48} x={width / 4} y={birdY} />
           </Group>
+
+          <Text x={width / 2} y={height / 6} font={font} text={score.toString()} />
         </Canvas>
       </GestureDetector>
     </GestureHandlerRootView>
