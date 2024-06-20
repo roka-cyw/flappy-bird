@@ -1,7 +1,17 @@
 import { useEffect } from 'react'
 import { useWindowDimensions } from 'react-native'
 import { Canvas, useImage, Image } from '@shopify/react-native-skia'
-import { useSharedValue, withTiming, Easing, withSequence, withRepeat } from 'react-native-reanimated'
+import {
+  useSharedValue,
+  withTiming,
+  Easing,
+  withSequence,
+  withRepeat,
+  useFrameCallback,
+  combineTransition
+} from 'react-native-reanimated'
+
+const GRAVITY = 500
 
 const App = () => {
   const { width, height } = useWindowDimensions()
@@ -15,6 +25,9 @@ const App = () => {
   const x = useSharedValue(width)
   const pipeOffset = 0
 
+  const birdY = useSharedValue(height / 2)
+  const birdYVelocity = useSharedValue(100)
+
   useEffect(() => {
     x.value = withRepeat(
       withSequence(withTiming(-150, { duration: 3000, easing: Easing.linear }), withTiming(width, { duration: 0 })),
@@ -22,13 +35,22 @@ const App = () => {
     )
   }, [])
 
+  useFrameCallback(({ timeSincePreviousFrame: dt }) => {
+    if (!dt) {
+      return
+    }
+
+    birdY.value = birdY.value + (birdYVelocity.value * dt) / 1000
+    birdYVelocity.value = birdYVelocity.value + (GRAVITY * dt) / 1000
+  })
+
   return (
-    <Canvas style={{ width, height }} onTouch={() => console.log('tesdt', width)}>
+    <Canvas style={{ width, height }} onTouch={() => (birdYVelocity.value = -300)}>
       <Image image={bg} width={width} height={height} fit={'cover'} />
       <Image image={pipeTop} width={104} height={640} x={x} y={pipeOffset - 320} />
       <Image image={pipeBottom} width={104} height={640} x={x} y={height - 320 + pipeOffset} />
       <Image image={base} width={width} height={150} x={0} y={height - 75} fit={'cover'} />
-      <Image image={bird} width={64} height={48} x={width / 4} y={height / 2} />
+      <Image image={bird} width={64} height={48} x={width / 4} y={birdY} />
     </Canvas>
   )
 }
