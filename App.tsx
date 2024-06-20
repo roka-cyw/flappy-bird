@@ -41,6 +41,9 @@ const App = () => {
   }
   const font = matchFont(fontStyle)
 
+  const birdPosition = {
+    x: width / 4
+  }
   const birdY = useSharedValue(height / 3)
   const birdYVelocity = useSharedValue(0)
   const birdTransform = useDerivedValue(() => {
@@ -74,7 +77,7 @@ const App = () => {
     () => x.value,
 
     (currentValue, previousValue) => {
-      const middle = width / 2
+      const middle = birdPosition.x
       if (currentValue !== previousValue && previousValue && currentValue <= middle && previousValue > middle) {
         runOnJS(setScore)(score + 1)
       }
@@ -91,7 +94,7 @@ const App = () => {
           <Image image={base} width={width} height={150} x={0} y={height - 75} fit={'cover'} />
 
           <Group transform={birdTransform} origin={birdOrigin}>
-            <Image image={bird} width={64} height={48} x={width / 4} y={birdY} />
+            <Image image={bird} width={64} height={48} x={birdPosition.x} y={birdY} />
           </Group>
 
           <Text x={width / 2} y={height / 6} font={font} text={score.toString()} />
