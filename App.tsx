@@ -12,7 +12,8 @@ import {
 } from 'react-native-reanimated'
 import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler'
 
-const GRAVITY = 500
+const GRAVITY = 1000
+const JUMP_FORCE = -500
 
 const App = () => {
   const { width, height } = useWindowDimensions()
@@ -26,8 +27,8 @@ const App = () => {
   const x = useSharedValue(width)
   const pipeOffset = 0
 
-  const birdY = useSharedValue(height / 2)
-  const birdYVelocity = useSharedValue(100)
+  const birdY = useSharedValue(height / 3)
+  const birdYVelocity = useSharedValue(0)
 
   useEffect(() => {
     x.value = withRepeat(
@@ -46,7 +47,7 @@ const App = () => {
   })
 
   const gesture = Gesture.Tap().onStart(() => {
-    birdYVelocity.value = -300
+    birdYVelocity.value = JUMP_FORCE
   })
 
   return (
