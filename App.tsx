@@ -12,7 +12,8 @@ import {
   interpolate,
   Extrapolation,
   useAnimatedReaction,
-  runOnJS
+  runOnJS,
+  cancelAnimation
 } from 'react-native-reanimated'
 import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler'
 import { useState } from 'react'
@@ -30,6 +31,7 @@ const App = () => {
   const pipeBottom = useImage(require('./assets/sprites/pipe-green.png'))
   const base = useImage(require('./assets/sprites/base.png'))
 
+  const gameOver = useSharedValue(false)
   const x = useSharedValue(width)
   const pipeOffset = 0
 
@@ -37,7 +39,7 @@ const App = () => {
   const fontStyle = {
     fontFamily,
     fontSize: 40,
-    FontWeight: 'bold'
+    fontWeight: 'bold'
   }
   const font = matchFont(fontStyle)
 
@@ -53,15 +55,19 @@ const App = () => {
     return { x: width / 4 + 32, y: birdY.value + 24 }
   })
 
-  useEffect(() => {
+  const moveMap = () => {
     x.value = withRepeat(
       withSequence(withTiming(-150, { duration: 3000, easing: Easing.linear }), withTiming(width, { duration: 0 })),
       -1
     )
+  }
+
+  useEffect(() => {
+    moveMap
   }, [])
 
   useFrameCallback(({ timeSincePreviousFrame: dt }) => {
-    if (!dt) {
+    if (!dt || gameOver.value) {
       return
     }
 
@@ -69,8 +75,23 @@ const App = () => {
     birdYVelocity.value = birdYVelocity.value + (GRAVITY * dt) / 1000
   })
 
+  const restartGame = () => {
+    'worklet'
+    // need more info about JS tread and UI tread
+    birdY.value = height / 3
+    birdYVelocity.value = 0
+    gameOver.value = false
+    x.value = width
+    runOnJS(moveMap)()
+    runOnJS(setScore)(0)
+  }
+
   const gesture = Gesture.Tap().onStart(() => {
-    birdYVelocity.value = JUMP_FORCE
+    if (gameOver.value) {
+      restartGame()
+    } else {
+      birdYVelocity.value = JUMP_FORCE
+    }
   })
 
   useAnimatedReaction(
@@ -80,6 +101,27 @@ const App = () => {
       const middle = birdPosition.x
       if (currentValue !== previousValue && previousValue && currentValue <= middle && previousValue > middle) {
         runOnJS(setScore)(score + 1)
+      }
+    }
+  )
+
+  // game over when bird down or up
+  useAnimatedReaction(
+    () => birdY.value,
+    (currentValue, previousValue) => {
+      if (currentValue > height - 120 || currentValue < 0) {
+        gameOver.value = true
+      }
+    }
+  )
+
+  // stop pipes animation
+  useAnimatedReaction(
+    () => gameOver.value,
+    (currentValue, previousValue) => {
+      if (currentValue && !previousValue) {
+        cancelAnimation(x)
+        // check game over value
       }
     }
   )
