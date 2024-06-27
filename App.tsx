@@ -59,6 +59,27 @@ const App = () => {
 
   const birdCenterX = useDerivedValue(() => birdPosition.x + 32)
   const birdCenterY = useDerivedValue(() => birdY.value + 24)
+  const obstacles = useDerivedValue(() => {
+    const allObstacles = []
+
+    // add bottom pipe
+    allObstacles.push({
+      x: x.value,
+      y: pipeOffset - 320,
+      height: pipeHeight,
+      width: pipeWidth
+    })
+
+    // add top pipe
+    allObstacles.push({
+      x: x.value,
+      y: height - 320 + pipeOffset,
+      height: pipeHeight,
+      width: pipeWidth
+    })
+
+    return allObstacles
+  })
 
   const moveMap = () => {
     x.value = withRepeat(
@@ -110,6 +131,11 @@ const App = () => {
     }
   )
 
+  const isPointCollidingWithReact = (point, rect) => {
+    'worklet'
+    return point.x >= rect.x && point.x <= rect.x + rect.width && point.y >= rect.y && point.y <= rect.y + rect.height
+  }
+
   // game over when bird down or up
   useAnimatedReaction(
     () => birdY.value,
@@ -120,27 +146,14 @@ const App = () => {
         gameOver.value = true
       }
 
-      // top pipe
-      if (
-        birdCenterX.value >= x.value &&
-        birdCenterX.value <= x.value + pipeWidth &&
-        birdCenterY.value >= pipeOffset - 320 &&
-        birdCenterY.value <= pipeOffset - 320 + pipeHeight
-      ) {
-        console.log('t pipe')
+      const isColliding = obstacles.value.some(rect =>
+        isPointCollidingWithReact({ x: birdCenterX.value, y: birdCenterY.value }, rect)
+      )
+      if (isColliding) {
+        console.log('colliding new')
         gameOver.value = true
       }
-
-      // bottom pipe
-      if (
-        birdCenterX.value >= x.value && // right of the left edge AND
-        birdCenterX.value <= x.value + pipeWidth && // left of the right edge AND
-        birdCenterY.value >= height - 320 + pipeOffset && // below the top AND
-        birdCenterY.value <= height - 320 + pipeOffset + pipeHeight // above the bottom
-      ) {
-        console.log('bottom pipe')
-        gameOver.value = true
-      }
+      // collision has to affect not only center of bird
     }
   )
 
@@ -167,7 +180,6 @@ const App = () => {
           <Group transform={birdTransform} origin={birdOrigin}>
             <Image image={bird} width={64} height={48} x={birdPosition.x} y={birdY} />
           </Group>
-
           <Circle cx={birdCenterX} cy={birdCenterY} r={15} color={'blue'} />
 
           <Text x={width / 2} y={height / 6} font={font} text={score.toString()} />
