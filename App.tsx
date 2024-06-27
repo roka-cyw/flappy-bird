@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Platform, useWindowDimensions } from 'react-native'
-import { Canvas, useImage, Image, Group, Text, FontStyle, FontWeight, matchFont } from '@shopify/react-native-skia'
+import { Canvas, useImage, Image, Group, Text, matchFont, Circle, Rect } from '@shopify/react-native-skia'
 import {
   useSharedValue,
   withTiming,
@@ -34,6 +34,8 @@ const App = () => {
   const gameOver = useSharedValue(false)
   const x = useSharedValue(width)
   const pipeOffset = 0
+  const pipeWidth = 104
+  const pipeHeight = 640
 
   const fontFamily = Platform.select({ ios: 'Helvetica', default: 'serif' })
   const fontStyle = {
@@ -54,6 +56,9 @@ const App = () => {
   const birdOrigin = useDerivedValue(() => {
     return { x: width / 4 + 32, y: birdY.value + 24 }
   })
+
+  const birdCenterX = useDerivedValue(() => birdPosition.x + 32)
+  const birdCenterY = useDerivedValue(() => birdY.value + 24)
 
   const moveMap = () => {
     x.value = withRepeat(
@@ -84,6 +89,7 @@ const App = () => {
     x.value = width
     runOnJS(moveMap)()
     runOnJS(setScore)(0)
+    // game work after restar only
   }
 
   const gesture = Gesture.Tap().onStart(() => {
@@ -96,7 +102,6 @@ const App = () => {
 
   useAnimatedReaction(
     () => x.value,
-
     (currentValue, previousValue) => {
       const middle = birdPosition.x
       if (currentValue !== previousValue && previousValue && currentValue <= middle && previousValue > middle) {
@@ -109,7 +114,31 @@ const App = () => {
   useAnimatedReaction(
     () => birdY.value,
     (currentValue, previousValue) => {
+      // when bird down or up
       if (currentValue > height - 120 || currentValue < 0) {
+        console.log('when bird down or up')
+        gameOver.value = true
+      }
+
+      // top pipe
+      if (
+        birdCenterX.value >= x.value &&
+        birdCenterX.value <= x.value + pipeWidth &&
+        birdCenterY.value >= pipeOffset - 320 &&
+        birdCenterY.value <= pipeOffset - 320 + pipeHeight
+      ) {
+        console.log('t pipe')
+        gameOver.value = true
+      }
+
+      // bottom pipe
+      if (
+        birdCenterX.value >= x.value && // right of the left edge AND
+        birdCenterX.value <= x.value + pipeWidth && // left of the right edge AND
+        birdCenterY.value >= height - 320 + pipeOffset && // below the top AND
+        birdCenterY.value <= height - 320 + pipeOffset + pipeHeight // above the bottom
+      ) {
+        console.log('bottom pipe')
         gameOver.value = true
       }
     }
@@ -131,13 +160,15 @@ const App = () => {
       <GestureDetector gesture={gesture}>
         <Canvas style={{ width, height }}>
           <Image image={bg} width={width} height={height} fit={'cover'} />
-          <Image image={pipeTop} width={104} height={640} x={x} y={pipeOffset - 320} />
-          <Image image={pipeBottom} width={104} height={640} x={x} y={height - 320 + pipeOffset} />
+          <Image image={pipeTop} width={pipeWidth} height={pipeHeight} x={x} y={pipeOffset - 320} />
+          <Image image={pipeBottom} width={pipeWidth} height={pipeHeight} x={x} y={height - 320 + pipeOffset} />
           <Image image={base} width={width} height={150} x={0} y={height - 75} fit={'cover'} />
 
           <Group transform={birdTransform} origin={birdOrigin}>
             <Image image={bird} width={64} height={48} x={birdPosition.x} y={birdY} />
           </Group>
+
+          <Circle cx={birdCenterX} cy={birdCenterY} r={15} color={'blue'} />
 
           <Text x={width / 2} y={height / 6} font={font} text={score.toString()} />
         </Canvas>
