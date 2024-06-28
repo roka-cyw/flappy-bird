@@ -74,11 +74,15 @@ const App = () => {
       width: pipeWidth
     }
   ])
+  const pipeSpeed = useDerivedValue(() => {
+    return interpolate(score, [0, 50], [1, 3])
+  })
 
   const moveMap = () => {
-    pipeX.value = withRepeat(
-      withSequence(withTiming(-150, { duration: 3000, easing: Easing.linear }), withTiming(width, { duration: 0 })),
-      -1
+    pipeX.value = withSequence(
+      withTiming(width, { duration: 0 }),
+      withTiming(-150, { duration: 3000 / pipeSpeed.value, easing: Easing.linear }),
+      withTiming(width, { duration: 0 })
     )
   }
 
@@ -123,6 +127,8 @@ const App = () => {
       // random pipes positions
       if (previousValue && currentValue < -100 && previousValue > -100) {
         pipeOffset.value = Math.random() * 400 - 200
+        cancelAnimation(pipeX)
+        runOnJS(moveMap)()
       }
 
       if (currentValue !== previousValue && previousValue && currentValue <= middle && previousValue > middle) {

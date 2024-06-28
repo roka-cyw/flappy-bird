@@ -29,7 +29,7 @@
     - Database for checking score
     - Show top 10 names
 
-## Sounds
+## Sounds (https://docs.expo.dev/versions/latest/sdk/av/)
 
     - Main sound
     - Sounds for click on menu
