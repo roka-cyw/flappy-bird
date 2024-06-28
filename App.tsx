@@ -32,7 +32,7 @@ const App = () => {
   const base = useImage(require('./assets/sprites/base.png'))
 
   const gameOver = useSharedValue(false)
-  const x = useSharedValue(width)
+  const pipeX = useSharedValue(width)
   const pipeWidth = 104
   const pipeHeight = 640
   const pipeOffset = useSharedValue(0)
@@ -47,10 +47,10 @@ const App = () => {
   }
   const font = matchFont(fontStyle)
 
-  const birdPosition = {
-    x: width / 4
-  }
+  const birdPosX = width / 4
   const birdY = useSharedValue(height / 3)
+  // const birdCenterX = useDerivedValue(() => birdPosX + 32)
+  // const birdCenterY = useDerivedValue(() => birdY.value + 24)
   const birdYVelocity = useSharedValue(0)
   const birdTransform = useDerivedValue(() => {
     return [{ rotate: interpolate(birdYVelocity.value, [-500, 500], [-0.5, 0.5], Extrapolation.CLAMP) }]
@@ -58,35 +58,25 @@ const App = () => {
   const birdOrigin = useDerivedValue(() => {
     return { x: width / 4 + 32, y: birdY.value + 24 }
   })
-
-  const birdCenterX = useDerivedValue(() => birdPosition.x + 32)
-  const birdCenterY = useDerivedValue(() => birdY.value + 24)
-  const obstacles = useDerivedValue(() => {
-    const allObstacles = []
-
-    // add bottom pipe
-    allObstacles.push({
-      x: x.value,
-      // y: bottomPipeY,
+  const obstacles = useDerivedValue(() => [
+    {
+      // add bottom pipe
+      x: pipeX.value,
       y: pipeOffset.value - 320,
       height: pipeHeight,
       width: pipeWidth
-    })
-
-    // add top pipe
-    allObstacles.push({
-      x: x.value,
-      // y: topPipeY,
+    },
+    {
+      // add top pipe
+      x: pipeX.value,
       y: height - 320 + pipeOffset.value,
       height: pipeHeight,
       width: pipeWidth
-    })
-
-    return allObstacles
-  })
+    }
+  ])
 
   const moveMap = () => {
-    x.value = withRepeat(
+    pipeX.value = withRepeat(
       withSequence(withTiming(-150, { duration: 3000, easing: Easing.linear }), withTiming(width, { duration: 0 })),
       -1
     )
@@ -111,7 +101,7 @@ const App = () => {
     birdY.value = height / 3
     birdYVelocity.value = 0
     gameOver.value = false
-    x.value = width
+    pipeX.value = width
     runOnJS(moveMap)()
     runOnJS(setScore)(0)
     // game work after restar only
@@ -126,10 +116,11 @@ const App = () => {
   })
 
   useAnimatedReaction(
-    () => x.value,
+    () => pipeX.value,
     (currentValue, previousValue) => {
-      const middle = birdPosition.x
+      const middle = birdPosX
 
+      // random pipes positions
       if (previousValue && currentValue < -100 && previousValue > -100) {
         pipeOffset.value = Math.random() * 400 - 200
       }
@@ -149,15 +140,21 @@ const App = () => {
   useAnimatedReaction(
     () => birdY.value,
     (currentValue, previousValue) => {
+      // const birdCenterX = useDerivedValue(() => birdPosX + 32)
+      // const birdCenterY = useDerivedValue(() => birdPosY.value + 24)
+      const birdCenter = {
+        x: birdPosX + 32,
+        y: birdY.value + 24
+      }
+
       // when bird down or up
       if (currentValue > height - 120 || currentValue < 0) {
         console.log('when bird down or up')
         gameOver.value = true
       }
 
-      const isColliding = obstacles.value.some(rect =>
-        isPointCollidingWithReact({ x: birdCenterX.value, y: birdCenterY.value }, rect)
-      )
+      const isColliding = obstacles.value.some(rect => isPointCollidingWithReact(birdCenter, rect))
+
       if (isColliding) {
         console.log('colliding new')
         gameOver.value = true
@@ -171,7 +168,7 @@ const App = () => {
     () => gameOver.value,
     (currentValue, previousValue) => {
       if (currentValue && !previousValue) {
-        cancelAnimation(x)
+        cancelAnimation(pipeX)
         // check game over value
       }
     }
@@ -182,14 +179,17 @@ const App = () => {
       <GestureDetector gesture={gesture}>
         <Canvas style={{ width, height }}>
           <Image image={bg} width={width} height={height} fit={'cover'} />
-          <Image image={pipeTop} width={pipeWidth} height={pipeHeight} x={x} y={topPipeY} />
-          <Image image={pipeBottom} width={pipeWidth} height={pipeHeight} x={x} y={bottomPipeY} />
+          <Image image={pipeTop} width={pipeWidth} height={pipeHeight} x={pipeX} y={topPipeY} />
+          <Image image={pipeBottom} width={pipeWidth} height={pipeHeight} x={pipeX} y={bottomPipeY} />
           <Image image={base} width={width} height={150} x={0} y={height - 75} fit={'cover'} />
 
           <Group transform={birdTransform} origin={birdOrigin}>
-            <Image image={bird} width={64} height={48} x={birdPosition.x} y={birdY} />
+            <Image image={bird} width={64} height={48} x={birdPosX} y={birdY} />
           </Group>
-          <Circle cx={birdCenterX} cy={birdCenterY} r={15} color={'blue'} />
+
+          {/* const birdCenterX = useDerivedValue(() => birdPosX + 32) */}
+          {/* const birdCenterY = useDerivedValue(() => birdY.value + 24) */}
+          {/* <Circle cx={birdCenterX} cy={birdCenterY} r={15} color={'blue'} /> */}
 
           <Text x={width / 2} y={height / 6} font={font} text={score.toString()} />
         </Canvas>
