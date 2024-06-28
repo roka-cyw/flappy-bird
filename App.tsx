@@ -33,9 +33,11 @@ const App = () => {
 
   const gameOver = useSharedValue(false)
   const x = useSharedValue(width)
-  const pipeOffset = 0
   const pipeWidth = 104
   const pipeHeight = 640
+  const pipeOffset = useSharedValue(0)
+  const topPipeY = useDerivedValue(() => pipeOffset.value - 320)
+  const bottomPipeY = useDerivedValue(() => height - 320 + pipeOffset.value)
 
   const fontFamily = Platform.select({ ios: 'Helvetica', default: 'serif' })
   const fontStyle = {
@@ -65,7 +67,8 @@ const App = () => {
     // add bottom pipe
     allObstacles.push({
       x: x.value,
-      y: pipeOffset - 320,
+      // y: bottomPipeY,
+      y: pipeOffset.value - 320,
       height: pipeHeight,
       width: pipeWidth
     })
@@ -73,7 +76,8 @@ const App = () => {
     // add top pipe
     allObstacles.push({
       x: x.value,
-      y: height - 320 + pipeOffset,
+      // y: topPipeY,
+      y: height - 320 + pipeOffset.value,
       height: pipeHeight,
       width: pipeWidth
     })
@@ -125,6 +129,11 @@ const App = () => {
     () => x.value,
     (currentValue, previousValue) => {
       const middle = birdPosition.x
+
+      if (previousValue && currentValue < -100 && previousValue > -100) {
+        pipeOffset.value = Math.random() * 400 - 200
+      }
+
       if (currentValue !== previousValue && previousValue && currentValue <= middle && previousValue > middle) {
         runOnJS(setScore)(score + 1)
       }
@@ -173,8 +182,8 @@ const App = () => {
       <GestureDetector gesture={gesture}>
         <Canvas style={{ width, height }}>
           <Image image={bg} width={width} height={height} fit={'cover'} />
-          <Image image={pipeTop} width={pipeWidth} height={pipeHeight} x={x} y={pipeOffset - 320} />
-          <Image image={pipeBottom} width={pipeWidth} height={pipeHeight} x={x} y={height - 320 + pipeOffset} />
+          <Image image={pipeTop} width={pipeWidth} height={pipeHeight} x={x} y={topPipeY} />
+          <Image image={pipeBottom} width={pipeWidth} height={pipeHeight} x={x} y={bottomPipeY} />
           <Image image={base} width={width} height={150} x={0} y={height - 75} fit={'cover'} />
 
           <Group transform={birdTransform} origin={birdOrigin}>
