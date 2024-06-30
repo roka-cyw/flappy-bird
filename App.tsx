@@ -1,12 +1,11 @@
 import { useEffect } from 'react'
 import { Platform, useWindowDimensions } from 'react-native'
-import { Canvas, useImage, Image, Group, Text, matchFont, Circle, Rect } from '@shopify/react-native-skia'
+import { Canvas, useImage, matchFont } from '@shopify/react-native-skia'
 import {
   useSharedValue,
   withTiming,
   Easing,
   withSequence,
-  withRepeat,
   useFrameCallback,
   useDerivedValue,
   interpolate,
@@ -17,6 +16,9 @@ import {
 } from 'react-native-reanimated'
 import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler'
 import { useState } from 'react'
+import Bird from './src/components/Bird'
+import Scene from './src/components/Scene'
+import Score from './src/components/Score'
 
 const GRAVITY = 1000
 const JUMP_FORCE = -500
@@ -74,6 +76,11 @@ const App = () => {
       width: pipeWidth
     }
   ])
+
+  useEffect(() => {
+    moveMap
+  }, [])
+
   const pipeSpeed = useDerivedValue(() => {
     return interpolate(score, [0, 50], [1, 3])
   })
@@ -85,10 +92,6 @@ const App = () => {
       withTiming(width, { duration: 0 })
     )
   }
-
-  useEffect(() => {
-    moveMap
-  }, [])
 
   useFrameCallback(({ timeSincePreviousFrame: dt }) => {
     if (!dt || gameOver.value) {
@@ -184,20 +187,21 @@ const App = () => {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <GestureDetector gesture={gesture}>
         <Canvas style={{ width, height }}>
-          <Image image={bg} width={width} height={height} fit={'cover'} />
-          <Image image={pipeTop} width={pipeWidth} height={pipeHeight} x={pipeX} y={topPipeY} />
-          <Image image={pipeBottom} width={pipeWidth} height={pipeHeight} x={pipeX} y={bottomPipeY} />
-          <Image image={base} width={width} height={150} x={0} y={height - 75} fit={'cover'} />
-
-          <Group transform={birdTransform} origin={birdOrigin}>
-            <Image image={bird} width={64} height={48} x={birdPosX} y={birdY} />
-          </Group>
-
-          {/* const birdCenterX = useDerivedValue(() => birdPosX + 32) */}
-          {/* const birdCenterY = useDerivedValue(() => birdY.value + 24) */}
-          {/* <Circle cx={birdCenterX} cy={birdCenterY} r={15} color={'blue'} /> */}
-
-          <Text x={width / 2} y={height / 6} font={font} text={score.toString()} />
+          <Scene
+            base={base}
+            bg={bg}
+            width={width}
+            height={height}
+            pipeTop={pipeTop}
+            pipeBottom={pipeBottom}
+            pipeWidth={pipeWidth}
+            pipeHeight={pipeHeight}
+            pipeX={pipeX}
+            topPipeY={topPipeY}
+            bottomPipeY={bottomPipeY}
+          />
+          <Bird bird={bird} birdTransform={birdTransform} birdOrigin={birdOrigin} birdPosX={birdPosX} birdY={birdY} />
+          <Score width={width} height={height} font={font} score={score.toString()} />
         </Canvas>
       </GestureDetector>
     </GestureHandlerRootView>

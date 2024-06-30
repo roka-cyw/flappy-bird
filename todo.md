@@ -11,7 +11,6 @@
 
     - Investigate about JS and UI treads
     - isPointCollidingWithReact understand it
-    - Read about circle and square collision
 
 ## Own updates
 
@@ -33,3 +32,9 @@
 
     - Main sound
     - Sounds for click on menu
+
+## Other
+
+    - Add TS
+    - Read about circle and square collision
+    - Babel.config.js. How to use?
