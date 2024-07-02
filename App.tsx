@@ -9,7 +9,6 @@ import {
   useFrameCallback,
   useDerivedValue,
   interpolate,
-  Extrapolation,
   useAnimatedReaction,
   runOnJS,
   cancelAnimation
@@ -20,8 +19,10 @@ import Bird from './src/components/Bird'
 import Scene from './src/components/Scene'
 import Score from './src/components/Score'
 
-const GRAVITY = 1000
-const JUMP_FORCE = -500
+const GRAVITY = 800
+const JUMP_FORCE = -250
+const AIR_RESISTANCE = 0.99
+const MAX_VELOCITY = 500
 
 const App = () => {
   const { width, height } = useWindowDimensions()
@@ -117,12 +118,26 @@ const App = () => {
   }
 
   useFrameCallback(({ timeSincePreviousFrame: dt }) => {
-    if (!dt || gameOver.value) {
-      return
-    }
+    // if (!dt || gameOver.value) {
+    //   return
+    // }
 
-    birdY.value = birdY.value + (birdYVelocity.value * dt) / 1000
-    birdYVelocity.value = birdYVelocity.value + (GRAVITY * dt) / 1000
+    // birdY.value = birdY.value + (birdYVelocity.value * dt) / 1000
+    // birdYVelocity.value = birdYVelocity.value + (GRAVITY * dt) / 1000
+
+    if (!dt || gameOver.value) return
+
+    // Apply gravity
+    birdYVelocity.value += GRAVITY * (dt / 1000)
+
+    // Apply air resistance
+    birdYVelocity.value *= AIR_RESISTANCE
+
+    // Limit velocity
+    birdYVelocity.value = Math.max(Math.min(birdYVelocity.value, MAX_VELOCITY), -MAX_VELOCITY)
+
+    // Update position
+    birdY.value += birdYVelocity.value * (dt / 1000)
   })
 
   const restartGame = () => {
