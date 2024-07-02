@@ -1,10 +1,10 @@
-import { Group, Image, useImage } from '@shopify/react-native-skia'
+import { Circle, Group, Image, Oval, useImage } from '@shopify/react-native-skia'
 import React from 'react'
 import { Extrapolation, interpolate, useDerivedValue } from 'react-native-reanimated'
 
 const Bird = ({ bird, birdUp, birdDown, width, birdPosX, birdY, birdYVelocity }) => {
   const birdTransform = useDerivedValue(() => {
-    return [{ rotate: interpolate(birdYVelocity.value, [-500, 500], [-0.5, 0.5], Extrapolation.CLAMP) }]
+    return [{ rotate: interpolate(birdYVelocity.value, [-700, 700], [-0.8, 0.8], Extrapolation.CLAMP) }]
   })
 
   const birdOrigin = useDerivedValue(() => {
