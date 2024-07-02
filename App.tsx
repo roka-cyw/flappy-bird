@@ -27,7 +27,10 @@ const App = () => {
   const { width, height } = useWindowDimensions()
   const [score, setScore] = useState(0)
 
-  const bird = useImage(require('./assets/sprites/yellowbird-upflap.png'))
+  const bird = useImage(require('./assets/sprites/yellowbird-midflap.png'))
+  const birdUp = useImage(require('./assets/sprites/yellowbird-upflap.png'))
+  const birdDown = useImage(require('./assets/sprites/yellowbird-downflap.png'))
+
   const bg = useImage(require('./assets/sprites/background-day.png'))
   const pipeTop = useImage(require('./assets/sprites/pipe-green-top.png'))
   const pipeBottom = useImage(require('./assets/sprites/pipe-green.png'))
@@ -188,7 +191,15 @@ const App = () => {
             topPipeY={topPipeY}
             bottomPipeY={bottomPipeY}
           />
-          <Bird bird={bird} width={width} birdYVelocity={birdYVelocity} birdPosX={birdPosX} birdY={birdY} />
+          <Bird
+            bird={bird}
+            birdUp={birdUp}
+            birdDown={birdDown}
+            width={width}
+            birdYVelocity={birdYVelocity}
+            birdPosX={birdPosX}
+            birdY={birdY}
+          />
           <Score width={width} height={height} score={score.toString()} />
         </Canvas>
       </GestureDetector>

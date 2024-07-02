@@ -14,7 +14,7 @@
 
     - Paint the pipe in case of a collision
     - Change **day** to **night** background
-    - Fill **Group** element (Now only 1 bird, have to be 3)
+    + Fill **Group** element (Now only 1 bird, have to be 3)
     - Upd physics (More like the original)
     - Use assets for counter
     - Move floor like pipes
