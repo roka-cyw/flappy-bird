@@ -1,19 +1,24 @@
-import { Image } from '@shopify/react-native-skia'
+import { Image, useImage } from '@shopify/react-native-skia'
 import React from 'react'
 
 const Scene = ({
-  base,
   bg,
-  width,
-  height,
   pipeTop,
   pipeBottom,
+  base,
+  width,
+  height,
   pipeWidth,
   pipeHeight,
   pipeX,
   topPipeY,
   bottomPipeY
 }) => {
+  // const bg = useImage(require('./assets/sprites/background-day.png'))
+  // const pipeTop = useImage(require('./assets/sprites/pipe-green-top.png'))
+  // const pipeBottom = useImage(require('./assets/sprites/pipe-green.png'))
+  // const base = useImage(require('./assets/sprites/base.png'))
+
   return (
     <>
       <Image image={bg} width={width} height={height} fit={'cover'} />

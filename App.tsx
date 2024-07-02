@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
-import { Platform, useWindowDimensions } from 'react-native'
-import { Canvas, useImage, matchFont } from '@shopify/react-native-skia'
+import { useWindowDimensions } from 'react-native'
+import { Canvas, useImage } from '@shopify/react-native-skia'
 import {
   useSharedValue,
   withTiming,
@@ -27,13 +27,14 @@ const App = () => {
   const { width, height } = useWindowDimensions()
   const [score, setScore] = useState(0)
 
-  const bg = useImage(require('./assets/sprites/background-day.png'))
   const bird = useImage(require('./assets/sprites/yellowbird-upflap.png'))
+  const bg = useImage(require('./assets/sprites/background-day.png'))
   const pipeTop = useImage(require('./assets/sprites/pipe-green-top.png'))
   const pipeBottom = useImage(require('./assets/sprites/pipe-green.png'))
   const base = useImage(require('./assets/sprites/base.png'))
 
   const gameOver = useSharedValue(false)
+
   const pipeX = useSharedValue(width)
   const pipeWidth = 104
   const pipeHeight = 640
@@ -41,25 +42,12 @@ const App = () => {
   const topPipeY = useDerivedValue(() => pipeOffset.value - 320)
   const bottomPipeY = useDerivedValue(() => height - 320 + pipeOffset.value)
 
-  const fontFamily = Platform.select({ ios: 'Helvetica', default: 'serif' })
-  const fontStyle = {
-    fontFamily,
-    fontSize: 40,
-    fontWeight: 'bold'
-  }
-  const font = matchFont(fontStyle)
-
   const birdPosX = width / 4
   const birdY = useSharedValue(height / 3)
   // const birdCenterX = useDerivedValue(() => birdPosX + 32)
   // const birdCenterY = useDerivedValue(() => birdY.value + 24)
   const birdYVelocity = useSharedValue(0)
-  const birdTransform = useDerivedValue(() => {
-    return [{ rotate: interpolate(birdYVelocity.value, [-500, 500], [-0.5, 0.5], Extrapolation.CLAMP) }]
-  })
-  const birdOrigin = useDerivedValue(() => {
-    return { x: width / 4 + 32, y: birdY.value + 24 }
-  })
+
   const obstacles = useDerivedValue(() => [
     {
       // add bottom pipe
@@ -76,6 +64,38 @@ const App = () => {
       width: pipeWidth
     }
   ])
+
+  const isPointCollidingWithReact = (point, rect) => {
+    'worklet'
+    return point.x >= rect.x && point.x <= rect.x + rect.width && point.y >= rect.y && point.y <= rect.y + rect.height
+  }
+
+  // game over when bird down or up
+  useAnimatedReaction(
+    () => birdY.value,
+    (currentValue, previousValue) => {
+      // const birdCenterX = useDerivedValue(() => birdPosX + 32)
+      // const birdCenterY = useDerivedValue(() => birdPosY.value + 24)
+      const birdCenter = {
+        x: birdPosX + 32,
+        y: birdY.value + 24
+      }
+
+      // when bird down or up
+      if (currentValue > height - 120 || currentValue < 0) {
+        console.log('when bird down or up')
+        gameOver.value = true
+      }
+
+      const isColliding = obstacles.value.some(rect => isPointCollidingWithReact(birdCenter, rect))
+
+      if (isColliding) {
+        console.log('colliding ---', obstacles.value, 'curr and prv', currentValue, previousValue)
+        gameOver.value = true
+      }
+      // collision has to affect not only center of bird
+    }
+  )
 
   useEffect(() => {
     moveMap
@@ -140,38 +160,6 @@ const App = () => {
     }
   )
 
-  const isPointCollidingWithReact = (point, rect) => {
-    'worklet'
-    return point.x >= rect.x && point.x <= rect.x + rect.width && point.y >= rect.y && point.y <= rect.y + rect.height
-  }
-
-  // game over when bird down or up
-  useAnimatedReaction(
-    () => birdY.value,
-    (currentValue, previousValue) => {
-      // const birdCenterX = useDerivedValue(() => birdPosX + 32)
-      // const birdCenterY = useDerivedValue(() => birdPosY.value + 24)
-      const birdCenter = {
-        x: birdPosX + 32,
-        y: birdY.value + 24
-      }
-
-      // when bird down or up
-      if (currentValue > height - 120 || currentValue < 0) {
-        console.log('when bird down or up')
-        gameOver.value = true
-      }
-
-      const isColliding = obstacles.value.some(rect => isPointCollidingWithReact(birdCenter, rect))
-
-      if (isColliding) {
-        console.log('colliding new')
-        gameOver.value = true
-      }
-      // collision has to affect not only center of bird
-    }
-  )
-
   // stop pipes animation
   useAnimatedReaction(
     () => gameOver.value,
@@ -188,20 +176,20 @@ const App = () => {
       <GestureDetector gesture={gesture}>
         <Canvas style={{ width, height }}>
           <Scene
-            base={base}
             bg={bg}
-            width={width}
-            height={height}
             pipeTop={pipeTop}
             pipeBottom={pipeBottom}
+            base={base}
+            width={width}
+            height={height}
             pipeWidth={pipeWidth}
             pipeHeight={pipeHeight}
             pipeX={pipeX}
             topPipeY={topPipeY}
             bottomPipeY={bottomPipeY}
           />
-          <Bird bird={bird} birdTransform={birdTransform} birdOrigin={birdOrigin} birdPosX={birdPosX} birdY={birdY} />
-          <Score width={width} height={height} font={font} score={score.toString()} />
+          <Bird bird={bird} width={width} birdYVelocity={birdYVelocity} birdPosX={birdPosX} birdY={birdY} />
+          <Score width={width} height={height} score={score.toString()} />
         </Canvas>
       </GestureDetector>
     </GestureHandlerRootView>
