@@ -105,7 +105,7 @@ const App = () => {
   )
 
   useEffect(() => {
-    moveMap
+    moveMap()
   }, [])
 
   const pipeSpeed = useDerivedValue(() => {

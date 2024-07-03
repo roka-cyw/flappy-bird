@@ -3,7 +3,7 @@
 ## Fix bugs and Investigate
 
     + Break down to diff files
-    - Game work after failing (after restart)
+    + Game work after failing (after restart)
     + Collision has to affect not only center of bird
     - Check **game over** value
 
