@@ -21,19 +21,13 @@ const Bird = ({ bird, birdUp, birdDown, width, birdPosX, birdY, birdYVelocity })
     }
   })
 
-  const birdCenterX = useDerivedValue(() => birdPosX + 32)
-  const birdCenterY = useDerivedValue(() => birdY.value + 24)
-
   return (
-    <>
-      <Group transform={birdTransform} origin={birdOrigin}>
-        <Image image={birdImage} width={64} height={48} x={birdPosX} y={birdY} />
-      </Group>
-
-      {/* const birdCenterX = useDerivedValue(() => birdPosX + 32) */}
-      {/* const birdCenterY = useDerivedValue(() => birdY.value + 24) */}
-      <Circle cx={birdCenterX} cy={birdCenterY} r={20} color={'blue'} />
-    </>
+    <Group transform={birdTransform} origin={birdOrigin}>
+      <Image image={birdImage} width={64} height={48} x={birdPosX} y={birdY} />
+    </Group>
+    /* const birdCenterX = useDerivedValue(() => birdPosX + 32) */
+    /* const birdCenterY = useDerivedValue(() => birdY.value + 24) */
+    /* <Circle cx={birdCenterX} cy={birdCenterY} r={20} color={'blue'} /> */
   )
 }
 
