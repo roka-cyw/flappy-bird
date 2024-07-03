@@ -1,10 +1,14 @@
-import { Image, useImage } from '@shopify/react-native-skia'
+import { Image } from '@shopify/react-native-skia'
 import React from 'react'
+import { useDerivedValue } from 'react-native-reanimated'
 
 const Scene = ({
   bg,
   pipeTop,
   pipeBottom,
+  pipeRedTop,
+  pipeRedBottom,
+  changePipe,
   base,
   width,
   height,
@@ -14,16 +18,14 @@ const Scene = ({
   topPipeY,
   bottomPipeY
 }) => {
-  // const bg = useImage(require('./assets/sprites/background-day.png'))
-  // const pipeTop = useImage(require('./assets/sprites/pipe-green-top.png'))
-  // const pipeBottom = useImage(require('./assets/sprites/pipe-green.png'))
-  // const base = useImage(require('./assets/sprites/base.png'))
+  const pipeTopImage = useDerivedValue(() => (changePipe.value === 'top' ? pipeRedTop : pipeTop))
+  const pipeBottomImage = useDerivedValue(() => (changePipe.value === 'bottom' ? pipeRedBottom : pipeBottom))
 
   return (
     <>
       <Image image={bg} width={width} height={height} fit={'cover'} />
-      <Image image={pipeTop} width={pipeWidth} height={pipeHeight} x={pipeX} y={topPipeY} />
-      <Image image={pipeBottom} width={pipeWidth} height={pipeHeight} x={pipeX} y={bottomPipeY} />
+      <Image image={pipeTopImage} width={pipeWidth} height={pipeHeight} x={pipeX} y={topPipeY} />
+      <Image image={pipeBottomImage} width={pipeWidth} height={pipeHeight} x={pipeX} y={bottomPipeY} />
       <Image image={base} width={width} height={150} x={0} y={height - 75} fit={'cover'} />
     </>
   )

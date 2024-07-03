@@ -1,4 +1,4 @@
-import { Circle, Group, Image, Oval, useImage } from '@shopify/react-native-skia'
+import { Circle, Group, Image } from '@shopify/react-native-skia'
 import React from 'react'
 import { Extrapolation, interpolate, useDerivedValue } from 'react-native-reanimated'
 
@@ -21,14 +21,19 @@ const Bird = ({ bird, birdUp, birdDown, width, birdPosX, birdY, birdYVelocity })
     }
   })
 
-  return (
-    <Group transform={birdTransform} origin={birdOrigin}>
-      <Image image={birdImage} width={64} height={48} x={birdPosX} y={birdY} />
-    </Group>
+  const birdCenterX = useDerivedValue(() => birdPosX + 32)
+  const birdCenterY = useDerivedValue(() => birdY.value + 24)
 
-    /* const birdCenterX = useDerivedValue(() => birdPosX + 32) */
-    /* const birdCenterY = useDerivedValue(() => birdY.value + 24) */
-    /* <Circle cx={birdCenterX} cy={birdCenterY} r={15} color={'blue'} /> */
+  return (
+    <>
+      <Group transform={birdTransform} origin={birdOrigin}>
+        <Image image={birdImage} width={64} height={48} x={birdPosX} y={birdY} />
+      </Group>
+
+      {/* const birdCenterX = useDerivedValue(() => birdPosX + 32) */}
+      {/* const birdCenterY = useDerivedValue(() => birdY.value + 24) */}
+      <Circle cx={birdCenterX} cy={birdCenterY} r={20} color={'blue'} />
+    </>
   )
 }
 

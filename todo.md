@@ -4,7 +4,7 @@
 
     + Break down to diff files
     - Game work after failing (after restart)
-    - Collision has to affect not only center of bird
+    > Collision has to affect not only center of bird
     - Check **game over** value
 
     - Investigate about JS and UI treads
@@ -12,7 +12,7 @@
 
 ## Own updates
 
-    - Paint the pipe in case of a collision
+    > Paint the pipe in case of a collision
     - Change **day** to **night** background
     + Fill **Group** element (Now only 1 bird, have to be 3)
     - Upd physics (More like the original)

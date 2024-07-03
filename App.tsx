@@ -21,10 +21,13 @@ import Score from './src/components/Score'
 
 const GRAVITY = 1200
 const JUMP_FORCE = -600
+const GROUND = 130
+const BIRD_RADIUS = 20
 
 const App = () => {
   const { width, height } = useWindowDimensions()
   const [score, setScore] = useState(0)
+  const changePipe = useSharedValue('')
 
   const bird = useImage(require('./assets/sprites/yellowbird-midflap.png'))
   const birdUp = useImage(require('./assets/sprites/yellowbird-upflap.png'))
@@ -33,6 +36,8 @@ const App = () => {
   const bg = useImage(require('./assets/sprites/background-day.png'))
   const pipeTop = useImage(require('./assets/sprites/pipe-green-top.png'))
   const pipeBottom = useImage(require('./assets/sprites/pipe-green.png'))
+  const pipeRedTop = useImage(require('./assets/sprites/pipe-red-top.png'))
+  const pipeRedBottom = useImage(require('./assets/sprites/pipe-red.png'))
   const base = useImage(require('./assets/sprites/base.png'))
 
   const gameOver = useSharedValue(false)
@@ -46,56 +51,55 @@ const App = () => {
 
   const birdPosX = width / 4
   const birdY = useSharedValue(height / 3)
-  // const birdCenterX = useDerivedValue(() => birdPosX + 32)
-  // const birdCenterY = useDerivedValue(() => birdY.value + 24)
   const birdYVelocity = useSharedValue(0)
 
   const obstacles = useDerivedValue(() => [
     {
-      // add bottom pipe
       x: pipeX.value,
       y: pipeOffset.value - 320,
       height: pipeHeight,
-      width: pipeWidth
+      width: pipeWidth,
+      position: 'top'
     },
     {
-      // add top pipe
       x: pipeX.value,
       y: height - 320 + pipeOffset.value,
       height: pipeHeight,
-      width: pipeWidth
+      width: pipeWidth,
+      position: 'bottom'
     }
   ])
 
-  const isPointCollidingWithReact = (point, rect) => {
+  const isPipeColliding = (point, rect) => {
     'worklet'
-    return point.x >= rect.x && point.x <= rect.x + rect.width && point.y >= rect.y && point.y <= rect.y + rect.height
+    return (
+      point.x + BIRD_RADIUS > rect.x &&
+      point.x - BIRD_RADIUS < rect.x + rect.width &&
+      point.y + BIRD_RADIUS > rect.y &&
+      point.y - BIRD_RADIUS < rect.y + rect.height
+    )
   }
 
   // game over when bird down or up
   useAnimatedReaction(
     () => birdY.value,
     (currentValue, previousValue) => {
-      // const birdCenterX = useDerivedValue(() => birdPosX + 32)
-      // const birdCenterY = useDerivedValue(() => birdPosY.value + 24)
       const birdCenter = {
         x: birdPosX + 32,
         y: birdY.value + 24
       }
 
       // when bird down or up
-      if (currentValue > height - 120 || currentValue < 0) {
-        console.log('when bird down or up')
+      if (currentValue > height - GROUND || currentValue < 30) {
         gameOver.value = true
       }
 
-      const isColliding = obstacles.value.some(rect => isPointCollidingWithReact(birdCenter, rect))
+      const isColliding = obstacles.value.findIndex(rect => isPipeColliding(birdCenter, rect))
 
-      if (isColliding) {
-        console.log('colliding ---', obstacles.value, 'curr and prv', currentValue, previousValue)
+      if (isColliding !== -1) {
+        changePipe.value = obstacles.value[isColliding].position
         gameOver.value = true
       }
-      // collision has to affect not only center of bird
     }
   )
 
@@ -108,6 +112,8 @@ const App = () => {
   })
 
   const moveMap = () => {
+    if (changePipe.value !== '') return
+
     pipeX.value = withSequence(
       withTiming(width, { duration: 0 }),
       withTiming(-150, { duration: 3000 / pipeSpeed.value, easing: Easing.linear }),
@@ -131,6 +137,7 @@ const App = () => {
     birdYVelocity.value = 0
     gameOver.value = false
     pipeX.value = width
+    changePipe.value = ''
     runOnJS(moveMap)()
     runOnJS(setScore)(0)
     // game work after restar only
@@ -181,6 +188,9 @@ const App = () => {
             bg={bg}
             pipeTop={pipeTop}
             pipeBottom={pipeBottom}
+            pipeRedTop={pipeRedTop}
+            pipeRedBottom={pipeRedBottom}
+            changePipe={changePipe}
             base={base}
             width={width}
             height={height}
