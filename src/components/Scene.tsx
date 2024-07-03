@@ -2,13 +2,18 @@ import { Image } from '@shopify/react-native-skia'
 import React from 'react'
 import { useDerivedValue } from 'react-native-reanimated'
 
+const AVAILABLE_BACKGROUNDS = 2
+const CHANGE_EVERY_POINTS = 6
+
 const Scene = ({
-  bg,
+  bgDay,
+  bgNight,
   pipeTop,
   pipeBottom,
   pipeRedTop,
   pipeRedBottom,
   changePipe,
+  score,
   base,
   width,
   height,
@@ -18,6 +23,7 @@ const Scene = ({
   topPipeY,
   bottomPipeY
 }) => {
+  const bg = useDerivedValue(() => (Math.floor(score / CHANGE_EVERY_POINTS) % AVAILABLE_BACKGROUNDS ? bgNight : bgDay))
   const pipeTopImage = useDerivedValue(() => (changePipe.value === 'top' ? pipeRedTop : pipeTop))
   const pipeBottomImage = useDerivedValue(() => (changePipe.value === 'bottom' ? pipeRedBottom : pipeBottom))
 

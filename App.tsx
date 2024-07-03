@@ -20,7 +20,7 @@ import Scene from './src/components/Scene'
 import Score from './src/components/Score'
 
 const GRAVITY = 1200
-const JUMP_FORCE = -600
+const JUMP_FORCE = -500
 const GROUND = 130
 const BIRD_RADIUS = 20
 
@@ -33,7 +33,8 @@ const App = () => {
   const birdUp = useImage(require('./assets/sprites/yellowbird-upflap.png'))
   const birdDown = useImage(require('./assets/sprites/yellowbird-downflap.png'))
 
-  const bg = useImage(require('./assets/sprites/background-day.png'))
+  const bgDay = useImage(require('./assets/sprites/background-day.png'))
+  const bgNight = useImage(require('./assets/sprites/background-night.png'))
   const pipeTop = useImage(require('./assets/sprites/pipe-green-top.png'))
   const pipeBottom = useImage(require('./assets/sprites/pipe-green.png'))
   const pipeRedTop = useImage(require('./assets/sprites/pipe-red-top.png'))
@@ -185,12 +186,14 @@ const App = () => {
       <GestureDetector gesture={gesture}>
         <Canvas style={{ width, height }}>
           <Scene
-            bg={bg}
+            bgDay={bgDay}
+            bgNight={bgNight}
             pipeTop={pipeTop}
             pipeBottom={pipeBottom}
             pipeRedTop={pipeRedTop}
             pipeRedBottom={pipeRedBottom}
             changePipe={changePipe}
+            score={score}
             base={base}
             width={width}
             height={height}
